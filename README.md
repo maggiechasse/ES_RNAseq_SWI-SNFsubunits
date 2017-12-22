@@ -1,5 +1,5 @@
-# Fall2017_Capstone
-Fall 2017 capstone for my Genomic Science Independent Study. 
+# ES_RNAseq_SWI/SNFsubunits
+Fall 2017 capstone for my Genomic Science Independent Study. This repository will hold RNA-seq analysis for SWI/SNF subunits in Ewing sarcoma cell lines. 
 
 Part A: Recap of the semester.
 
