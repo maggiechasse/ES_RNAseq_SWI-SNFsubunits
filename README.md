@@ -30,23 +30,17 @@ This function will subset the ES RNA seq data by looking for ensemble IDs in the
 SWISNF_seq <- subset(ES_RNAseq, ens_id %in% SWISNF_SubunitNames$ensembl_id)
 ** ACTL6B was missing, so SWISNF_seq only has 12 subunits, not 13 like the original SWISNF_SubunitName excel**
 View(SWISNF_seq)
-
-# Exported SWISNF_seq
 write.csv(SWISNF_seq, "SWISNF_seq.csv")
 
 # Replace Ensembl IDs with HGNC Symbols using biomaRt
 library(biomaRt)
 ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl", GRCh=37)
 ListAttributes(ensemble)
-**want hgnc_symbol*****
 SWISNF_seq_hgnc <- getBM(attributes=c('hgnc_symbol','chromosome_name','start_position','end_position'), filters =
 + 'ensembl_gene_id', values = SWISNF_seq$ens_id, mart = ensembl)
-**Add HGNC_ID to SWISNF_seq dataframe**
 SWISNF_seq$HGNC_ID <-SWISNF_seq_hgnc[,c(1)]
-**Move HGNC ID to first column and remove ensembl ID column**
 SWISNF_seq <- subset(SWISNF_seq, select=c(HGNC_ID,ens_id:TC71_siNeg30_3)) 
 SWISNF_seq$ens_id <- NULL
-**Exported SWISNF_seq**
 write.csv(SWISNF_seq, "SWISNF_seq_hgnc.csv")
 
 # Average each replicate
