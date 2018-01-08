@@ -27,45 +27,46 @@ View(SWISNF_SubunitNames)
 
 # Subset ES RNA seq dataframe with the subset function.
 This function will subset the ES RNA seq data by looking for ensemble IDs in the SWISNF_SubunitNames excel in the ens_id column in ES_RNAseq
-SWISNF_seq <- subset(ES_RNAseq, ens_id %in% SWISNF_SubunitNames$ensembl_id)
+1. SWISNF_seq <- subset(ES_RNAseq, ens_id %in% SWISNF_SubunitNames$ensembl_id)
 ** ACTL6B was missing, so SWISNF_seq only has 12 subunits, not 13 like the original SWISNF_SubunitName excel**
 View(SWISNF_seq)
-write.csv(SWISNF_seq, "SWISNF_seq.csv")
+2. write.csv(SWISNF_seq, "SWISNF_seq.csv")
 
 # Replace Ensembl IDs with HGNC Symbols using biomaRt
-library(biomaRt)
-ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl", GRCh=37)
-ListAttributes(ensemble)
-SWISNF_seq_hgnc <- getBM(attributes=c('hgnc_symbol','chromosome_name','start_position','end_position'), filters = 'ensembl_gene_id', values = SWISNF_seq$ens_id, mart = ensembl)
-SWISNF_seq$HGNC_ID <-SWISNF_seq_hgnc[,c(1)]
-SWISNF_seq <- subset(SWISNF_seq, select=c(HGNC_ID,ens_id:TC71_siNeg30_3)) 
-SWISNF_seq$ens_id <- NULL
-write.csv(SWISNF_seq, "SWISNF_seq_hgnc.csv")
+1. library(biomaRt)
+2. ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl", GRCh=37)
+3. ListAttributes(ensemble)
+4. SWISNF_seq_hgnc <- getBM(attributes=c('hgnc_symbol','chromosome_name','start_position','end_position'), filters = 'ensembl_gene_id', values = SWISNF_seq$ens_id, mart = ensembl)
+5. SWISNF_seq$HGNC_ID <-SWISNF_seq_hgnc[,c(1)]
+6. SWISNF_seq <- subset(SWISNF_seq, select=c(HGNC_ID,ens_id:TC71_siNeg30_3)) 
+7. SWISNF_seq$ens_id <- NULL
+8. write.csv(SWISNF_seq, "SWISNF_seq_hgnc.csv")
 
 # Average each replicate
-library(reshape2)
-SWISNF_seq_melt <- melt(SWISNF_seq_hgnc)
-colnames(SWISNF_seq_melt)[2:3] <- c("Treatment", "Expression_Value")
+1. library(reshape2)
+2. SWISNF_seq_melt <- melt(SWISNF_seq_hgnc)
+3. colnames(SWISNF_seq_melt)[2:3] <- c("Treatment", "Expression_Value")
 
 Did not know how to split the dataframe further into cell line and treatment. So I did that in excel and uploaded that dataframe as the new SWISNF_seq_melt.
-SWISNF_seq_melt2 <- read_csv("~/Desktop/SWISNF_seq_melt.csv")
-SWISNF_grouped <- SWISNF_seq_melt2 %>% group_by(HGNC_ID, Treatment, Cell_Line)
-SWISNF_seq_mean <- summarise(SWISNF_grouped, mean=mean(Expression_Value), sd=sd(Expression_Value))
+4. SWISNF_seq_melt2 <- read_csv("~/Desktop/SWISNF_seq_melt.csv")
+5. SWISNF_grouped <- SWISNF_seq_melt2 %>% group_by(HGNC_ID, Treatment, Cell_Line)
+6. library(dplyr)
+7. SWISNF_seq_mean <- summarise(SWISNF_grouped, mean=mean(Expression_Value), sd=sd(Expression_Value))
 
 # Plot Figures
-library(ggplot2)
+1. library(ggplot2)
 
 # Figure 1_RawScatterplot
-ggplot(SWISNF_seq_mean, aes(x=HGNC_ID)) + geom_point(aes(y=mean, color=Treatment)) + labs(title = "siEWS/FLI1 Knockdown", y = "RNA Expression", x = "SWI/SNF Subunit", color = "Treatment Time") + theme_light() + theme(axis.text.x = element_text(angle = 90, hjust = 1), plot.title = element_text(hjust = 0.5)) + facet_grid(Cell_Line ~ .) + theme(strip.text.y = element_text(size = 10))
+1. ggplot(SWISNF_seq_mean, aes(x=HGNC_ID)) + geom_point(aes(y=mean, color=Treatment)) + labs(title = "siEWS/FLI1 Knockdown", y = "RNA Expression", x = "SWI/SNF Subunit", color = "Treatment Time") + theme_light() + theme(axis.text.x = element_text(angle = 90, hjust = 1), plot.title = element_text(hjust = 0.5)) + facet_grid(Cell_Line ~ .) + theme(strip.text.y = element_text(size = 10))
 
 # Figure 2_RawHeatmap
 Combined the cell line and treatment columns
-SWISNF_seq_mean$Cell_Line_Tx <- paste(SWISNF_seq_mean$Cell_Line,SWISNF_seq_mean$Treatment)
-SWISNF_seq_mean$Cell_Line <- NULL
-SWISNF_seq_mean$Treatment <- NULL
-SWISNF_seq_mean <- subset(SWISNF_seq_mean, select=c(HGNC_ID,Cell_Line_Tx, mean, sd))
-write.csv(SWISNF_seq_mean, "SWISNF_seq_mean_heat.csv")
-ggplot(SWISNF_seq_mean, aes(Cell_Line_Tx, HGNC_ID)) + geom_tile(aes(fill = mean), color = "white") + scale_fill_gradient(low = "white", high = "steelblue") + ylab("SWI/SNF Subunits") + xlab("siRNA Treatment") + theme(legend.title = element_text(size = 10), legend.text = element_text(size = 12), plot.title = element_text(size=16), axis.title=element_text(size=14,face="bold"), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(fill = "mRNA Expression level") + ggtitle("siEWS/FLI1 Knockdown") + theme(plot.title = element_text(hjust = 0.5))
+1. SWISNF_seq_mean$Cell_Line_Tx <- paste(SWISNF_seq_mean$Cell_Line,SWISNF_seq_mean$Treatment)
+2. SWISNF_seq_mean$Cell_Line <- NULL
+3. SWISNF_seq_mean$Treatment <- NULL
+4. SWISNF_seq_mean <- subset(SWISNF_seq_mean, select=c(HGNC_ID,Cell_Line_Tx, mean, sd))
+5. write.csv(SWISNF_seq_mean, "SWISNF_seq_mean_heat.csv")
+6. ggplot(SWISNF_seq_mean, aes(Cell_Line_Tx, HGNC_ID)) + geom_tile(aes(fill = mean), color = "white") + scale_fill_gradient(low = "white", high = "steelblue") + ylab("SWI/SNF Subunits") + xlab("siRNA Treatment") + theme(legend.title = element_text(size = 10), legend.text = element_text(size = 12), plot.title = element_text(size=16), axis.title=element_text(size=14,face="bold"), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(fill = "mRNA Expression level") + ggtitle("siEWS/FLI1 Knockdown") + theme(plot.title = element_text(hjust = 0.5))
 
 # Final Thoughts
 As far as I understand, the standard workflow for RNA-seq is as follows: Bioconductor is a popular package that will help map ensembl IDs or chromosomal locations to gene names and IDs therefore turning sequencing reads into gene names. In this capstone, I used biomart to convert ensembl IDs from the RNA-seq data to HGNC IDs. Bioconductor also offers pakcages that will normalize and calculate fold changes for differential gene expression analysis (e.g. EdgeR and DESeq2). To caluclate statistics and clean up data, both dplyr and tidyr will help with data manipulation (such as finding the mean and SD of replicates for dplyr and data clean up with tidyr) to help clean up data for analysis. Lastly, qplot or ggplot2 can be used to plot the data - more specifically, MDS plots will allow for variation in the data and heatmap clustering will allow for expression changes to be presented in a clear and meaningful format. 
