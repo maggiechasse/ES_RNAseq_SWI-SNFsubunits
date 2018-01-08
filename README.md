@@ -36,8 +36,7 @@ write.csv(SWISNF_seq, "SWISNF_seq.csv")
 library(biomaRt)
 ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl", GRCh=37)
 ListAttributes(ensemble)
-SWISNF_seq_hgnc <- getBM(attributes=c('hgnc_symbol','chromosome_name','start_position','end_position'), filters =
-+ 'ensembl_gene_id', values = SWISNF_seq$ens_id, mart = ensembl)
+SWISNF_seq_hgnc <- getBM(attributes=c('hgnc_symbol','chromosome_name','start_position','end_position'), filters = 'ensembl_gene_id', values = SWISNF_seq$ens_id, mart = ensembl)
 SWISNF_seq$HGNC_ID <-SWISNF_seq_hgnc[,c(1)]
 SWISNF_seq <- subset(SWISNF_seq, select=c(HGNC_ID,ens_id:TC71_siNeg30_3)) 
 SWISNF_seq$ens_id <- NULL
