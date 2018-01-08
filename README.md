@@ -48,6 +48,7 @@ View(SWISNF_seq)
 3. colnames(SWISNF_seq_melt)[2:3] <- c("Treatment", "Expression_Value")
 
 Did not know how to split the dataframe further into cell line and treatment. So I did that in excel and uploaded that dataframe as the new SWISNF_seq_melt.
+
 4. SWISNF_seq_melt2 <- read_csv("~/Desktop/SWISNF_seq_melt.csv")
 5. SWISNF_grouped <- SWISNF_seq_melt2 %>% group_by(HGNC_ID, Treatment, Cell_Line)
 6. library(dplyr)
